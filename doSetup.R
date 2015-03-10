@@ -60,6 +60,7 @@ doSetup <- function(modelFileName){
     # Write out the file
     fileConn <- file(reparaModelFileName)
     writeLines(reparaModelFile, fileConn)
+    close(fileConn)
 
     # Get the model name without extension
     reparaModelFileNameNoExt <- sub("\\.[[:alnum:]]+$", "", 
