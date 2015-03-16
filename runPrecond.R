@@ -1,15 +1,14 @@
 
 
 
-runPrecond <- function(modelFileName,modelFileNameNoExt, illCondFileName, 
-                       runNum, pertSize, precondScriptPath, wait=FALSE, pertSeed){
+runPrecond <- function(modelFileName, modelFileNameNoExt, pertSize, precondScriptPath, 
+                       runNum, illCondFileName, pertSeed, wait){
   
   # Create a dir name to use
-  dirNameString <- paste0(gsub(".csv$", "", illCondFileName), "_run_")
-  dirName <- paste0(dirNameString, formatC(runNum, digits=0, width=3, format="f", flag="0"))
+  dirName <- paste0(gsub(".csv$", "", basename(illCondFileName)))
   
   # Create the command
-  cmd <- paste0("srun perl ", precondScriptPath, " ", modelFileName, " -dir=", dirName,
+  cmd <- paste0("perl ", precondScriptPath, " ", modelFileName, " -dir=", dirName,
                 " -pre=", illCondFileName, " -cholesky -pertSize=", pertSize,
                 " -clean=2 -seedForPert=", pertSeed)
   

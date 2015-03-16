@@ -1,40 +1,68 @@
 
-runMassPrecond <- function(modelFileName, magnitudes=1, runsPerMag=10, pertSize=0.2, 
+runMassPrecond <- function(modelFileName, maxMag=15, reps=1000, pertSize=0.2, 
                            precondScriptPath = "C:/Users/hnyberg/Dropbox/Doktorandsaker/PrecondProject/_hackedPsN3/PsN4_3/bin/precond_numStab"){
   
   # Get the working directory to set it back later
   userWD <- getwd()
   
   # Create a unique folder, copy all the relevant files there and set wd.
-  modelFileNameNoExt <- doSetup(modelFileName)
-
+  modelFileNameNoExt <- fileSysSetup(modelFileName)
+  modelFileName <- paste0(modelFileNameNoExt, ".mod")
   
+  # Generate a magnitude for each rep
+  magnitudes <- cbind(1:reps, sort(runif(reps, min=0, max=maxMag)))
+  
+  # Create a folder to keep the illcond csvs in
+  dir.create("./illCondFiles")
+    
   # Do the illconditioning for each magnitude
-  illCondFiles <- lapply(magnitudes, function(x){
-    illCondRand(paste0(modelFileNameNoExt, ".cov"), x)
+  # Create a data frame with all the runs' illCondFiles and run numbers and seeds
+  runRows <- lapply(1:nrow(magnitudes), function(i){
+    illCondSetup(paste0(modelFileNameNoExt, ".cov"), magnitudes[i,2], magnitudes[i,1])
   })
   
-  # Create a data frame with all the runs' illCondFiles and run numbers
-  runs <- prepRunsToRun(runsPerMag, illCondFiles)
+  # Bind them together
+  runs <- as.data.frame(do.call("rbind", runRows))
+  names(runs) <- c("reps", "illCondFiles", "teorCondNums", "seeds")
+  
+  # I want to wait for the last run to finish. Adding a column to the runs dataframe
+  # for wait option true or false.
+  waits <- vector(mode="logical", length=reps)
+  
+  # Wait for every 100th run, and the last run to finish. I set 
+  # the last and every 100th wait to TRUE.
+  waits[seq.int(0, length(waits), 100)] <- "TRUE"
+  waits[length(waits)] <- "TRUE"
+  
+  # Bind them
+  runs <- cbind(runs, waits)
   
   # Run all the runs!
-  allRunDirs <- apply(runs, 1, function(x){
+  runDirs <- apply(runs, 1, function(x){
     # The way I point to the right element below is not great! This might fall over :(
-    runPrecond(modelFileName, modelFileNameNoExt, as.numeric(x[2]), as.numeric(x[1]), 
-               pertSize, precondScriptPath, as.logical(x[3]), as.integer(x[4]))
+    runPrecond(modelFileName, modelFileNameNoExt, pertSize, precondScriptPath, 
+               as.numeric(x[1]), as.character(x[2]), as.integer(x[4]), as.logical(x[5]))
   })
   
+  # Make sure they are finished by waiting a bit. The wait setting 
+  # should suffice, but better safe than sorry.
+  Sys.sleep(30)
+  
+  # Bind them
+  runs <- cbind(runs, runDirs)
+  
   # Parse the rawres output from PsN precond
-  allRows <- lapply(allRunDirs, function(x){
+  allRows <- lapply(runDirs, function(x){
     
     # Put together what the file should be called
     rawresFileName <- paste0(x, "/modelfit_dir1/raw_results.csv")
     
     # Check if the rawres file exist, and if so, parse it
-    
     if(file.exists(rawresFileName)==TRUE){
       rawres <- read.csv(rawresFileName)
       row <- c(x, rawres)
+      names(row) <- c("runDirs", names(rawres))
+      print(paste("Parsing", rawresFileName))
       return(row)
     }
     return(NULL)
@@ -43,9 +71,14 @@ runMassPrecond <- function(modelFileName, magnitudes=1, runsPerMag=10, pertSize=
   # Bind together all of the rows from the list 
   allData <- do.call("rbind", allRows)
   
+  # Merge with the runs df and remove any pesky list issues
+  rawResultsMerge <- merge(runs, allData, by="runDirs")
+  rawResults <- as.data.frame(lapply(rawResultsMerge, unlist))
+  
   # Bind in the run dataframe as well. Is there a risk for row mixups? 
-  # Would be cool to get the condNum in there too
-  rawResults <- cbind(runs, allData)
+  
+  # Save the rData. Just a safety feature because of issues with csv
+  save(rawResults, file = "rawres.Rdata")
   
   # Write our the results to a raw results file
   write.csv(rawResults, file="raw_results.csv", row.names=FALSE)

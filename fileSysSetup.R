@@ -1,5 +1,5 @@
 
-doSetup <- function(modelFileName){
+fileSysSetup <- function(modelFileName){
   
   # Get the model file name without extension for various uses
   modelFileNameNoExt <- sub("\\.[[:alnum:]]+$", "", basename(as.character(modelFileName)))
@@ -41,8 +41,8 @@ doSetup <- function(modelFileName){
     # We have all we need to build the command and run it
     # I'm using the unhacked precond version of the precond hacked PsN version :)
     
-    cmd <- paste0("perl C:/Users/hnyberg/Documents/PsN4/PsN-Source/bin/precond ", 
-                  modelFileName, " -pre=", covFileName," -cholesky -dir=org_mod_precond")
+    cmd <- paste0("perl ./../../_hackedPsN/PsN4_3/bin/precond ", modelFileName, " -pre=", 
+                  covFileName," -cholesky -dir=org_mod_precond")
     
     system(cmd, wait=TRUE)
       
