@@ -1,6 +1,7 @@
 
 runMassPrecond <- function(modelFileName, maxMag=15, reps=1000, pertSize=0.2, 
-                           precondScriptPath = "C:/Users/hnyberg/Dropbox/Doktorandsaker/PrecondProject/_hackedPsN3/PsN4_3/bin/precond_numStab"){
+                           precondScriptPath = "C:/Users/hnyberg/Dropbox/Doktorandsaker/PrecondProject/_hackedPsN3/PsN4_3/bin/precond_numStab",
+                           secsToWait=60){
   
   # Get the working directory to set it back later
   userWD <- getwd()
@@ -44,9 +45,9 @@ runMassPrecond <- function(modelFileName, maxMag=15, reps=1000, pertSize=0.2,
                as.numeric(x[1]), as.character(x[2]), as.integer(x[4]), as.logical(x[5]))
   })
   
-  # Make sure they are finished by waiting a bit. The wait setting 
-  # should suffice, but better safe than sorry.
-  Sys.sleep(30)
+  # Make sure they are finished by waiting a bit. It would be super cool
+  # if I could parse the cluster queue and wait until that is empty.
+  Sys.sleep(secsToWait)
   
   # Bind them
   runs <- cbind(runs, runDirs)
@@ -54,8 +55,14 @@ runMassPrecond <- function(modelFileName, maxMag=15, reps=1000, pertSize=0.2,
   # Parse the rawres output from PsN precond
   allRows <- lapply(runDirs, function(x){
     
-    # Put together what the file should be called
-    rawresFileName <- paste0(x, "/modelfit_dir1/raw_results.csv")
+    # Put together what the rawres path should be
+    if(file.exists(x)==TRUE){
+      rawresFileName <- paste0(x, "/modelfit_dir1/raw_results.csv")
+    }else{
+      rawresFileName <- "not_even_a_run_directory"
+    }
+    
+    
     
     # Check if the rawres file exist, and if so, parse it
     if(file.exists(rawresFileName)==TRUE){

@@ -23,8 +23,8 @@ nrow(subset(rawresNoNA, group==3))
 nrow(subset(rawresNoNA, group==4))
 nrow(subset(rawresNoNA, group==5))
 
-mean1 <- mean(rawresNoNA[minimization_successful==1&covariance_step_successful==1, "ofv"])
-mean2 <- mean(rawresNoNA[minimization_successful==1&covariance_step_successful==0, "ofv"])
+mean1 <- mean(rawresNoNA[group==1, "ofv"])
+mean2 <- mean(rawres[minimization_successful==1&covariance_step_successful==0, "ofv"])
 mean3 <- mean(rawresNoNA[minimization_successful==0&covariance_step_successful==1, "ofv"])
 mean4 <- mean(rawresNoNA[minimization_successful==0&covariance_step_successful==0, "ofv"])
 
