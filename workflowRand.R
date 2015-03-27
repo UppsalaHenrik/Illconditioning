@@ -58,13 +58,12 @@ runMassPrecond <- function(modelFileName, maxMag=15, reps=1000, pertSize=0.2,
     # Put together what the rawres path should be
     if(file.exists(x)==TRUE){
       rawresFileName <- paste0(x, "/modelfit_dir1/raw_results.csv")
+      extFileName <- paste0(x, "/m1/", modelFileNameNoExt, ".ext")
     }else{
       rawresFileName <- "not_even_a_run_directory"
     }
     
-    
-    
-    # Check if the rawres file exist, and if so, parse it
+    # Check if the rawres fikle exist, and if so, parse it
     if(file.exists(rawresFileName)==TRUE){
       rawres <- read.csv(rawresFileName)
       row <- c(x, rawres)
@@ -72,6 +71,7 @@ runMassPrecond <- function(modelFileName, maxMag=15, reps=1000, pertSize=0.2,
       print(paste("Parsing", rawresFileName))
       return(row)
     }
+    
     return(NULL)
   })
   
