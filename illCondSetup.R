@@ -104,7 +104,7 @@ illCondSetup <- function(covCsv, magnitude, replic){
   
   if(length(fixRows)==0){
     
-    rCondFull <- newSymFullMat
+    newMat <- newSymFullMat
     
   } else {
     # Create a 0 matrix with the right number of rows and the rCond number of columns
@@ -121,20 +121,20 @@ illCondSetup <- function(covCsv, magnitude, replic){
     zeroMatCols[,-fixRows] <- zeroMatRows
     
     # Name it something better than zeroMatCols
-    rCondFull <- zeroMatCols
+    newMat <- zeroMatCols
 
   }
   
   # I'm having issues with the precond script saying the matrix isn't symmetric.
   # I'll fix that here.
-  rCondFull <- (rCondFull+t(rCondFull))/2
+  newMat <- (newMat+t(newMat))/2
   
   # Write out the csv with the magnitude in the name, formatted to 3 leading digits
   csvFileName <- paste0("./illCondFiles/illcond_rep_", 
                         formatC(replic, digits=0, width=5, format="d", flag="0"), 
                         ".csv")
   
-  write.table(rCondFull, csvFileName, row.names=FALSE, col.names=FALSE, sep=",")
+  write.table(newMat, csvFileName, row.names=FALSE, col.names=FALSE, sep=",")
   
   seed <- as.integer(runif(1, min=1000, max=1000000))
   
