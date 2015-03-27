@@ -108,14 +108,15 @@ illCondSetup <- function(covCsv, magnitude, replic){
     
   } else {
     # Create a 0 matrix with the right number of rows and the rCond number of columns
-    zeroMatRows <- matrix(0, nrow=max(nrow(newSymFullMat), fixRows), 
+    zeroMatRows <- matrix(0, nrow=nrow(orgCovMatrix), 
                           ncol=ncol(newSymFullMat))
     
     # Insert the non-zero values into the correct rows
     zeroMatRows[-c(fixRows), ] <- as.matrix(newSymFullMat)
     
     # Create a 0 matrix with the right number of rows and columns
-    zeroMatCols <- matrix(0, nrow=nrow(zeroMatRows), ncol=max(ncol(newSymFullMat), fixRows))
+    zeroMatCols <- matrix(0, nrow=nrow(zeroMatRows), 
+                          ncol=ncol(orgCovMatrix))
     
     # Insert the values from the previous step into the correct columns 
     zeroMatCols[,-fixRows] <- zeroMatRows
