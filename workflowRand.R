@@ -54,27 +54,9 @@ runMassPrecond <- function(modelFileName, maxMag=15, reps=1000, pertSize=0.2,
   
   # Parse the rawres output from PsN precond
   allRows <- lapply(runDirs, function(x){
-    
-    # Put together what the rawres path should be
-    if(file.exists(x)==TRUE){
-      rawresFileName <- paste0(x, "/modelfit_dir1/raw_results.csv")
-      extFileName <- paste0(x, "/m1/", modelFileNameNoExt, ".ext")
-    }else{
-      rawresFileName <- "not_even_a_run_directory"
-    }
-    
-    # Check if the rawres fikle exist, and if so, parse it
-    if(file.exists(rawresFileName)==TRUE){
-      rawres <- read.csv(rawresFileName)
-      row <- c(x, rawres)
-      names(row) <- c("runDirs", names(rawres))
-      print(paste("Parsing", rawresFileName))
-      return(row)
-    }
-    
-    return(NULL)
+    parsePrecond(x, modelFileNameNoExt)
   })
-  
+
   # Bind together all of the rows from the list 
   allData <- do.call("rbind", allRows)
   

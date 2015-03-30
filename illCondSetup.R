@@ -64,15 +64,18 @@ illCondSetup <- function(covCsv, magnitude, replic){
   
   condNumMatRows <- matrix(0, nrow=nrow(noFixCovMatrix), ncol=nrow(newThetaMat))
 
-  
-  # Insert the inverted, random theta rows into the right places
-  condNumMatRows[-nonFixNonThetaRows,] <- eigenDecomp$vectors %*% diag(newEigenVals^-alpha) %*% t(eigenDecomp$vectors)
-  
-  # Insert the non theta rows
-  
-  condNumMat <- cbind(condNumMatRows, noFixCovMatrix[,nonFixNonThetaRows])
-  
-  condNumMat[nonFixNonThetaRows,] <- noFixCovMatrix[nonFixNonThetaRows,]
+  if(length(nonFixNonThetaRows)==0){
+    condNumMat <- eigenDecomp$vectors %*% diag(newEigenVals^-alpha) %*% t(eigenDecomp$vectors)
+  }else{
+    # Insert the inverted, random theta rows into the right places
+    condNumMatRows[-nonFixNonThetaRows,] <- eigenDecomp$vectors %*% diag(newEigenVals^-alpha) %*% t(eigenDecomp$vectors)
+    
+    # Insert the non theta rows
+    
+    condNumMat <- cbind(condNumMatRows, noFixCovMatrix[,nonFixNonThetaRows])
+    
+    condNumMat[nonFixNonThetaRows,] <- noFixCovMatrix[nonFixNonThetaRows,]
+  }
   
   # Calculate the theoretical condition number
   theorCondNum <- kappa(condNumMat, exact=TRUE)
@@ -90,15 +93,20 @@ illCondSetup <- function(covCsv, magnitude, replic){
                                ncol=nrow(newSymThetaMat))
   
   
-  # Insert the random theta rows into the right places
-  newSymThetaMatRows[-nonFixNonThetaRows,] <- newSymThetaMat
+  if(length(nonFixNonThetaRows)==0){
+    newSymFullMat <- newSymThetaMat
+  }else{
+    # Insert the random theta rows into the right places
+    newSymThetaMatRows[-nonFixNonThetaRows,] <- newSymThetaMat
+    
+    # Insert the non theta rows
+    
+    newSymFullMat <- cbind(newSymThetaMatRows, 
+                           noFixCovMatrix[,nonFixNonThetaRows])
+    
+    newSymFullMat[nonFixNonThetaRows,] <- noFixCovMatrix[nonFixNonThetaRows,]
+  }
   
-  # Insert the non theta rows
-  
-  newSymFullMat <- cbind(newSymThetaMatRows, 
-                         noFixCovMatrix[,nonFixNonThetaRows])
-  
-  newSymFullMat[nonFixNonThetaRows,] <- noFixCovMatrix[nonFixNonThetaRows,]
   
   # If there were any fixed params, put back the zeroes
   
