@@ -1,6 +1,7 @@
 
 
-rawres <- read.csv("rawres_subset.csv", stringsAsFactors=FALSE, )
+rawres <- read.csv("raw_results.csv", stringsAsFactors=FALSE, header=TRUE)
+
 
 head(rawres)
 
@@ -50,17 +51,30 @@ ggplot(rawresNoNA, aes(x=group, y=ofv, fill=as.character(rawresNoNA$group)))+
   geom_boxplot()+
   scale_fill_discrete(name="Outcome",
                       breaks=c("1", "2", "3", "4"),
-                      labels=c("Min+Cov\nN=7997", "Min Only\nN=116", "Cov Only\nN=1167", "Neither\nN=369"))
+                      labels=c(paste0("Min+Cov\nN=", nrow(subset(rawresNoNA, group==1))),
+                               paste0("Min Only\nN=", nrow(subset(rawresNoNA, group==2))), 
+                               paste0("Cov Only\nN=", nrow(subset(rawresNoNA, group==3))), 
+                               paste0("Neither\nN=", nrow(subset(rawresNoNA, group==4)))))
 
 ggplot(rawresNoNA, aes(x=group, y=teorCondNums, fill=as.character(rawresNoNA$group)))+
   geom_boxplot()+
   scale_y_log10()+
   scale_fill_discrete(name="Outcome",
                       breaks=c("1", "2", "3", "4"),
-                      labels=c("Min+Cov\nN=7997", "Min Only\nN=116", "Cov Only\nN=1167", "Neither\nN=369"))
+                      labels=c(paste0("Min+Cov\nN=", nrow(subset(rawresNoNA, group==1))),
+                               paste0("Min Only\nN=", nrow(subset(rawresNoNA, group==2))), 
+                               paste0("Cov Only\nN=", nrow(subset(rawresNoNA, group==3))), 
+                               paste0("Neither\nN=", nrow(subset(rawresNoNA, group==4)))))
 
 
-ggplot(rawresNoNA, aes(x=teorCondNums, y=ofv))+
-  geom_point(shape=group, size=3, colour="black", fill=as.character(group))+
-  scale_x_log10()
+ggplot(rawresNoNA, aes(x=teorCondNums, y=ofv, colour=factor(group)))+
+  geom_point(shape=factor(group), size=factor(group), fill=factor(group))+
+  scale_x_log10()+
+  scale_fill_discrete(name="Outcome",
+                      breaks=c("1", "2", "3", "4"),
+                      labels=c(paste0("Min+Cov\nN=", nrow(subset(rawresNoNA, group==1))),
+                               paste0("Min Only\nN=", nrow(subset(rawresNoNA, group==2))), 
+                               paste0("Cov Only\nN=", nrow(subset(rawresNoNA, group==3))), 
+                               paste0("Neither\nN=", nrow(subset(rawresNoNA, group==4)))))
+
 
