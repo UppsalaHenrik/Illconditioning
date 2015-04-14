@@ -13,7 +13,10 @@ source("./../Rfunctions/runPrecond.R", echo=FALSE)
 # Workflow wrapper function
 source("./../Rfunctions/workflowRand.R", echo=FALSE)
 
-# Workflow wrapper function
+# Results parsing function
+source("./../Rfunctions/parsePrecond.R", echo=FALSE)
+
+# Util functions
 source("./../Rfunctions/parsePrecond.R", echo=FALSE)
 
 
@@ -21,4 +24,4 @@ source("./../Rfunctions/parsePrecond.R", echo=FALSE)
 
 rawres <- runMassPrecond("run1.mod", maxMag=20, reps=10, pertSize=0.2, 
                          precondScriptPath="./../../_hackedPsN/PsN4_3/bin/precond_numStab",
-                         30)
+                         600)

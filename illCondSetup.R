@@ -47,16 +47,20 @@ illCondSetup <- function(covCsv, magnitude, replic){
   newEigenVals <- abs(eigenDecomp$values)
   
   # Create the new positive definite matrix
-  posDefRandThetaMat <- eigenDecomp$vectors %*% diag(newEigenVals) %*% t(eigenDecomp$vectors)
+  posDefRandThetaMat <- eigenDecomp$vectors %*% 
+                        diag(newEigenVals) %*% 
+                        t(eigenDecomp$vectors)
 
   # Make sure the matrix is symmetric
-  posDefSymRandThetaMat <- (posDefRandThetaMat+t(posDefRandThetaMat))/2
+  # posDefSymRandThetaMat <- (posDefRandThetaMat+t(posDefRandThetaMat))/2
   
   # Test some alpha stuff
   alpha <- (magnitude*log(10)) / (log(kappa(posDefSymRandThetaMat, exact=TRUE)))
   
   
-  newThetaMat <- eigenDecomp$vectors %*% diag(newEigenVals^alpha) %*% t(eigenDecomp$vectors)
+  newThetaMat <- eigenDecomp$vectors %*% 
+                 diag(newEigenVals^alpha) %*% 
+                 t(eigenDecomp$vectors)
   
   
   # I should really get the condition number of the inverse theta matrix plus the original 
@@ -65,10 +69,14 @@ illCondSetup <- function(covCsv, magnitude, replic){
   condNumMatRows <- matrix(0, nrow=nrow(noFixCovMatrix), ncol=nrow(newThetaMat))
 
   if(length(nonFixNonThetaRows)==0){
-    condNumMat <- eigenDecomp$vectors %*% diag(newEigenVals^-alpha) %*% t(eigenDecomp$vectors)
+    condNumMat <- eigenDecomp$vectors %*% 
+                  diag(newEigenVals^-alpha) %*% 
+                  t(eigenDecomp$vectors)
   }else{
     # Insert the inverted, random theta rows into the right places
-    condNumMatRows[-nonFixNonThetaRows,] <- eigenDecomp$vectors %*% diag(newEigenVals^-alpha) %*% t(eigenDecomp$vectors)
+    condNumMatRows[-nonFixNonThetaRows,] <- eigenDecomp$vectors %*% 
+                                            diag(newEigenVals^-alpha) %*% 
+                                            t(eigenDecomp$vectors)
     
     # Insert the non theta rows
     
@@ -86,7 +94,7 @@ illCondSetup <- function(covCsv, magnitude, replic){
   
   
   # Make sure the newThetaMat is symmetric
-  newSymThetaMat <- (newThetaMat+t(newThetaMat))/2
+  #newSymThetaMat <- (newThetaMat+t(newThetaMat))/2
   
   # Put back sigma and omega elements
   newSymThetaMatRows <- matrix(0, nrow=nrow(noFixCovMatrix), 
@@ -148,5 +156,5 @@ illCondSetup <- function(covCsv, magnitude, replic){
   seed <- as.integer(runif(1, min=1000, max=1000000))
   
   # return the generated csv file name
-  return(c(replic, csvFileName, theorCondNum, seed))
+  return(c(replic, csvFileName, magnitude, theorCondNum, seed))
 }

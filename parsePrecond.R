@@ -1,6 +1,8 @@
 
 parsePrecond <- function(precondDir, modelFileNameNoExt){
   
+  print(paste("Parsing", precondDir))
+  
   # Paste together the expected file paths
   rawresFilePath <- paste0(precondDir, "/modelfit_dir1/raw_results.csv")
   extFilePath <- paste0(precondDir, "/m1/", modelFileNameNoExt, 
@@ -17,17 +19,16 @@ parsePrecond <- function(precondDir, modelFileNameNoExt){
     # Parse rawres
     rawres <- read.csv(rawresFilePath)
     
-    # Parse initial OFV from .ext file
-    extFile <- read.table(extFilePath, header=FALSE, sep=" ", skip=2, nrows=1)
-    initOFV <- as.numeric(extFile[length(extFile)])
+    # Parse .ext file and get initial OFV and condition number of corr matrix
+    extFileDF <- parseExtFile(extFilePath)
+    initOFV <- getInitOFV(extFileDF)
+    NMCondNum <- calcNMCondNum(extFileDF)
     
     # Put them together and return
-    row <- c(precondDir, initOFV, rawres)
-    names(row) <- c("runDirs", "initOFV", names(rawres))
-    print(paste("Parsing", precondDir))
+    row <- c(precondDir, NMCondNum, initOFV, rawres)
+    names(row) <- c("runDirs", "NMCondNums", "initOFVs", names(rawres))
+    
     return(row)
-    
-    
   }
   
   if(dirExists & rawresExists){
@@ -35,14 +36,14 @@ parsePrecond <- function(precondDir, modelFileNameNoExt){
     # Parse rawres
     rawres <- read.csv(rawresFilePath)
     
-    # Put them together and return
-    row <- c(precondDir, "NA", rawres)
-    names(row) <- c("runDirs", "initOFV", names(rawres))
-    print(paste("Parsing", precondDir))
+    # Put them together and return with NAs for the ext file information
+    row <- c(precondDir, "NA", "NA", rawres)
+    names(row) <- c("runDirs", "NMCondNums", "initOFVs", names(rawres))
+    
     return(row)
   }
   
   # If neither of those cases are true I just return NULL
-  print(paste("Parsing", precondDir, "failed as the rawres file wasn't found"))
+  print(paste("Parsing", precondDir, "failed as the raw results file wasn't found"))
   return(NULL)
 }

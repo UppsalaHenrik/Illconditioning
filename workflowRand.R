@@ -24,7 +24,7 @@ runMassPrecond <- function(modelFileName, maxMag=15, reps=1000, pertSize=0.2,
   
   # Bind them together
   runs <- as.data.frame(do.call("rbind", runRows))
-  names(runs) <- c("reps", "illCondFiles", "teorCondNums", "seeds")
+  names(runs) <- c("reps", "illCondFiles", "magnitudes", "theorCondNums", "seeds")
   
   # I want to wait for the last run to finish. Adding a column to the runs dataframe
   # for wait option true or false.
@@ -52,7 +52,7 @@ runMassPrecond <- function(modelFileName, maxMag=15, reps=1000, pertSize=0.2,
   # Bind them
   runs <- cbind(runs, runDirs)
   
-  # Parse the rawres output from PsN precond
+  # Parse the rawres and .ext output from PsN precond
   allRows <- lapply(runDirs, function(x){
     parsePrecond(x, modelFileNameNoExt)
   })
@@ -70,7 +70,10 @@ runMassPrecond <- function(modelFileName, maxMag=15, reps=1000, pertSize=0.2,
   save(rawResults, file = "rawres.Rdata")
   
   # Write our the results to a raw results file
-  write.csv(rawResults, file="raw_results.csv", row.names=FALSE)
+  write.csv(rawResults, file=paste0("raw_results_", 
+                                    basename(getwd()), 
+                                    ".csv"),
+            row.names=FALSE)
   
   # List all the NM_run directories
   modelfitDirs <- list.dirs(recursive=TRUE)[grep("modelfit_dir[0-9]+$", 
