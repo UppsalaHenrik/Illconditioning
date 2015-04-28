@@ -185,15 +185,15 @@ waitForSlurmQ <- function(targetLength=0, secsToWait=30, maxWaits=20){
     # if it has no jobs in it end the while loop
     if(qLength - 1 <= targetLength){
       keepWaiting <- FALSE
-      qEmptyMessage <- paste("Queue has", qLength - 1, "runs, ending wait.")
-      print(qEmptyMessage)
+      qTargetMessage <- paste0("Queue has ", qLength - 1, " jobs (<=", targetLength, ") - ending wait.")
+      print(qTargetMessage)
       break
     }
     
     # Print a message about the wait
     qWaitMessage <- paste("Waiting for", secsToWait, "seconds (nr", 
-                          i, "out of ", maxWaits, "waits) - ", 
-                          qLength-1, "runs in queue")
+                          i, "out of max", maxWaits, "waits) - ", 
+                          qLength-1, "jobs in queue")
     print(qWaitMessage)
     
     # Wait for specified number of seconds 
@@ -201,6 +201,11 @@ waitForSlurmQ <- function(targetLength=0, secsToWait=30, maxWaits=20){
     
     # Grow i 
     i <- i + 1
+    
+    if(i > maxWaits){
+      qMaxWaitsMessage <- paste("Wait limit reached. Waited for", secsToWait*i, "seconds" )
+      print(qMaxWaitsMessage)
+    }
   }  
   
 }

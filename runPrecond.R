@@ -2,7 +2,7 @@
 
 
 runPrecond <- function(modelFileName, modelFileNameNoExt, pertSize, precondScriptPath, 
-                       runNum, illCondFileName, pertSeed, wait){
+                       runNum, illCondFileName, pertSeed){
   
   # Wait for the SLURM queue to have less than 100 runs in it
   waitForSlurmQ(targetLength=100, secsToWait=5, maxWaits=12)
@@ -18,7 +18,7 @@ runPrecond <- function(modelFileName, modelFileNameNoExt, pertSize, precondScrip
   print(cmd)
   
   # Run the command
-  system(cmd, intern=wait, wait=wait)
+  system(cmd, intern=FALSE, wait=FALSE)
   
   return(dirName)
 }

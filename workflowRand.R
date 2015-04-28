@@ -1,7 +1,6 @@
 
 runMassPrecond <- function(modelFileName, maxMag=15, reps=1000, pertSize=0.2, 
-                           precondScriptPath = "C:/Users/hnyberg/Dropbox/Doktorandsaker/PrecondProject/_hackedPsN3/PsN4_3/bin/precond_numStab",
-                           secsToWait=60){
+                           precondScriptPath = "C:/Users/hnyberg/Dropbox/Doktorandsaker/PrecondProject/_hackedPsN3/PsN4_3/bin/precond_numStab"){
   
   # Get the working directory to set it back later
   userWD <- getwd()
@@ -23,23 +22,11 @@ runMassPrecond <- function(modelFileName, maxMag=15, reps=1000, pertSize=0.2,
   runs <- as.data.frame(do.call("rbind", runRows))
   names(runs) <- c("reps", "illCondFiles", "magnitudes", "theorCondNums", "seeds")
   
-  # I want to wait for the last run to finish. Adding a column to the runs dataframe
-  # for wait option true or false.
-  waits <- vector(mode="logical", length=reps)
-  
-  # Wait for every 100th run, and the last run to finish. I set 
-  # the last and every 100th wait to TRUE.
-  waits[seq.int(0, length(waits), 100)] <- "TRUE"
-  waits[length(waits)] <- "TRUE"
-  
-  # Bind them
-  runs <- cbind(runs, waits)
-  
   # Run all the runs!
   runDirs <- apply(runs, 1, function(x){
     # The way I point to the right element below is not great! This might fall over :(
     runPrecond(modelFileName, modelFileNameNoExt, pertSize, precondScriptPath, 
-               as.numeric(x[1]), as.character(x[2]), as.integer(x[5]), as.logical(x[6]))
+               as.numeric(x[1]), as.character(x[2]), as.integer(x[5]))
   })
   
   # Wait for the user's queue to be empty (slurm only) 
