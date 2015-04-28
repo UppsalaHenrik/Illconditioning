@@ -35,6 +35,13 @@ fileSysSetup <- function(modelFileName){
   # Set working directory to the new folder
   setwd(dirName)
   
+  # Create a folder to keep the illcond csvs in
+  dir.create("./illCondFiles")
+  
+  
+  # Create a folder to do the illcond runs in
+  dir.create("./illCondRuns")
+  
   # If the model isn't already a _repara model, run the model in precond
   if((length(grep("_repara", modelFileNameNoExt)) == 0)){
     

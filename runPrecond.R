@@ -4,8 +4,11 @@
 runPrecond <- function(modelFileName, modelFileNameNoExt, pertSize, precondScriptPath, 
                        runNum, illCondFileName, pertSeed, wait){
   
+  # Wait for the SLURM queue to have less than 100 runs in it
+  waitForSlurmQ(targetLength=100, secsToWait=5, maxWaits=12)
+  
   # Create a dir name to use
-  dirName <- paste0(gsub(".csv$", "", basename(illCondFileName)))
+  dirName <- paste0("./illCondRuns/", gsub(".csv$", "", basename(illCondFileName)))
   
   # Create the command
   cmd <- paste0("srun perl ", precondScriptPath, " ", modelFileName, " -dir=", dirName,

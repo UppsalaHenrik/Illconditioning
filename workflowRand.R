@@ -12,9 +12,6 @@ runMassPrecond <- function(modelFileName, maxMag=15, reps=1000, pertSize=0.2,
   
   # Generate a magnitude for each rep
   magnitudes <- cbind(1:reps, sort(runif(reps, min=0, max=maxMag)))
-  
-  # Create a folder to keep the illcond csvs in
-  dir.create("./illCondFiles")
     
   # Do the illconditioning for each magnitude
   # Create a data frame with all the runs' illCondFiles and run numbers and seeds
@@ -42,19 +39,18 @@ runMassPrecond <- function(modelFileName, maxMag=15, reps=1000, pertSize=0.2,
   runDirs <- apply(runs, 1, function(x){
     # The way I point to the right element below is not great! This might fall over :(
     runPrecond(modelFileName, modelFileNameNoExt, pertSize, precondScriptPath, 
-               as.numeric(x[1]), as.character(x[2]), as.integer(x[4]), as.logical(x[5]))
+               as.numeric(x[1]), as.character(x[2]), as.integer(x[5]), as.logical(x[6]))
   })
   
-  # Make sure they are finished by waiting a bit. It would be super cool
-  # if I could parse the cluster queue and wait until that is empty.
-  Sys.sleep(secsToWait)
+  # Wait for the user's queue to be empty (slurm only) 
+  waitForSlurmQ()
   
   # Bind them
   runs <- cbind(runs, runDirs)
   
   # Parse the rawres and .ext output from PsN precond
   allRows <- lapply(runDirs, function(x){
-    parsePrecond(x, modelFileNameNoExt)
+    parseIllcond(x, modelFileNameNoExt)
   })
 
   # Bind together all of the rows from the list 

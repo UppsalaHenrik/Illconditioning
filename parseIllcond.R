@@ -1,5 +1,5 @@
 
-parsePrecond <- function(precondDir, modelFileNameNoExt){
+parseIllcond <- function(precondDir, modelFileNameNoExt){
   
   print(paste("Parsing", precondDir))
   

@@ -14,14 +14,15 @@ source("./../Rfunctions/runPrecond.R", echo=FALSE)
 source("./../Rfunctions/workflowRand.R", echo=FALSE)
 
 # Results parsing function
-source("./../Rfunctions/parsePrecond.R", echo=FALSE)
+source("./../Rfunctions/parseIllcond.R", echo=FALSE)
+
+# Reporting function
+source("./../Rfunctions/reportIllcond.R", echo=FALSE)
 
 # Util functions
-source("./../Rfunctions/parsePrecond.R", echo=FALSE)
-
+source("./../Rfunctions/utils.R", echo=FALSE)
 
 ########## Set off commands
 
-rawres <- runMassPrecond("run1.mod", maxMag=20, reps=10, pertSize=0.2, 
-                         precondScriptPath="./../../_hackedPsN/PsN4_3/bin/precond_numStab",
-                         600)
+rawres <- runMassPrecond("run1.mod", maxMag=15, reps=10, pertSize=0, 
+                         precondScriptPath="./../../_hackedPsN/PsN4_3/bin/precond_numStab")
