@@ -5,45 +5,84 @@ parseIllcond <- function(precondDir, modelFileNameNoExt){
   
   # Paste together the expected file paths
   rawresFilePath <- paste0(precondDir, "/modelfit_dir1/raw_results.csv")
-  extFilePath <- paste0(precondDir, "/m1/", modelFileNameNoExt, 
-                        "_repara.ext")
+  extFilePath <- paste0(precondDir, "/modelfit_dir1/NM_run1/psn.ext")
+  corrFilePath <- paste0(precondDir, "/modelfit_dir1/NM_run1/psn.cor")
+  rMatFilePath <- paste0(precondDir, "/modelfit_dir1/NM_run1/psn.rmt")
   
   # Check wether the relevant folder and files exist
   dirExists <- file.exists(precondDir)
   rawresExists <- file.exists(rawresFilePath)
   extExists <- file.exists(extFilePath)
+  corrExists <- file.exists(corrFilePath)
+  rMatExists <- file.exists(rMatFilePath)
   
-  # For the case where all exist
-  if(dirExists & rawresExists & extExists){
-    
-    # Parse rawres
-    rawres <- read.csv(rawresFilePath)
+  # If the directory cannot be found, return NULL
+  if(dirExists == FALSE){
+    dirMessage <- paste("Could not find directory", precondDir)
+    print(dirMessage)
+    return(NULL)
+  }
+  
+  # If the raw results file cannot be found, return NULL
+  if(rawresExists == FALSE){
+    rawresMessage <- paste("Could not find raw results file", precondDir)
+    print(rawresMessage)
+    return(NULL)
+  }
+  
+  # Parse rawres
+  rawres <- read.csv(rawresFilePath)
+  
+  # If the ext file exists, parse the condnum from the eigen values NONMEM reports
+  if(extExists){
     
     # Parse .ext file and get initial OFV and condition number of corr matrix
     extFileDF <- parseExtFile(extFilePath)
     initOFV <- getInitOFV(extFileDF)
     NMCondNum <- calcNMCondNum(extFileDF)
+  
+  }else{
     
-    # Put them together and return
-    row <- c(precondDir, NMCondNum, initOFV, rawres)
-    names(row) <- c("runDirs", "NMCondNums", "initOFVs", names(rawres))
+    NMCondNum <- "NA"
     
-    return(row)
+  }
+
+  # If available, parse the correlation matrix and calculate its condition number
+  if(corrExists){
+    
+    # Parse the correlation matrix and get the condition number
+    corrMat <- parseNonmemMat(corrFilePath)
+    corrMatNoZero <- stripZeroRowsCols(corrMat)[[1]]
+    
+    corrMatCondNum <- kappa(corrMatNoZero, exact=TRUE)
+    
+  }else{
+    
+    # If the correlation matrix was not found we just display it as NA
+    corrMatCondNum <- "NA"
   }
   
-  if(dirExists & rawresExists){
+  # If available, parse the R matrix and calculate its condition number  
+  # For a succesfully completed run with thetas only, this should be
+  # the same as the theoretical condition number of the solution
+  if(rMatExists){
     
-    # Parse rawres
-    rawres <- read.csv(rawresFilePath)
+    # Parse the R matrix and get the condition number
+    rMat <- parseNonmemMat(rMatFilePath)
+    rMatNoZero <- stripZeroRowsCols(rMat)[[1]]
     
-    # Put them together and return with NAs for the ext file information
-    row <- c(precondDir, "NA", "NA", rawres)
-    names(row) <- c("runDirs", "NMCondNums", "initOFVs", names(rawres))
+    rMatCondNum <- kappa(rMatNoZero, exact=TRUE)
     
-    return(row)
+  }else{
+    
+    # If the R matrix was not found we just display it as NA
+    rMatCondNum <- "NA"
   }
+   
+  # Put them together and return
+  row <- c(precondDir, NMCondNum, corrMatCondNum, rMatCondNum, initOFV, rawres)
+  names(row) <- c("runDirs", "NMCondNums", "corrMatCondNums", "rMatCondNums", 
+                  "initOFVs", names(rawres))
   
-  # If neither of those cases are true I just return NULL
-  print(paste("Parsing", precondDir, "failed as the raw results file wasn't found"))
-  return(NULL)
+  return(row)
 }

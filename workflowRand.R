@@ -47,9 +47,7 @@ runMassPrecond <- function(modelFileName, maxMag=15, reps=1000, pertSize=0.2,
   rawResultsMerge <- merge(runs, allData, by="runDirs")
   rawResults <- as.data.frame(lapply(rawResultsMerge, unlist))
   
-  # Bind in the run dataframe as well. Is there a risk for row mixups? 
-  
-  # Save the rData. Just a safety feature because of issues with csv
+    # Save the rData. Just a safety feature because of issues with csv
   save(rawResults, file = "rawres.Rdata")
   
   # Write our the results to a raw results file
@@ -57,6 +55,9 @@ runMassPrecond <- function(modelFileName, maxMag=15, reps=1000, pertSize=0.2,
                                     basename(getwd()), 
                                     ".csv"),
             row.names=FALSE)
+  
+  # Do the automatic reporting
+  reportIllcond(rawResults)
   
   # List all the NM_run directories
   modelfitDirs <- list.dirs(recursive=TRUE)[grep("modelfit_dir[0-9]+$", 
@@ -69,6 +70,12 @@ runMassPrecond <- function(modelFileName, maxMag=15, reps=1000, pertSize=0.2,
     file.copy(list.files(x, full.names=TRUE)[grep("^raw_results.csv", 
                                                   list.files(x))], 
               gsub(basename(x), "raw_results.csv", x))
+    file.copy(list.files(x, full.names=TRUE, 
+                         recursive=TRUE)[grep("psn.lst", list.files(x, recursive=TRUE))], 
+              gsub(basename(x), "psn.lst", x))
+    file.copy(list.files(x, full.names=TRUE, 
+                         recursive=TRUE)[grep("psn.rmt", list.files(x, recursive=TRUE))], 
+              gsub(basename(x), "psn.rmt", x))
   })
   
   # Delete the NM_run directories

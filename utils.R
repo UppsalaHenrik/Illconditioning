@@ -60,33 +60,32 @@ getInitOFV <- function(extFileDF){
 }
 
 
-parseRMat <- function(rMatFilePath){
+parseNonmemMat <- function(nonmemMatFilePath){
   
-  rawRMatFile <- readLines(rMatFilePath)
-  header <- unlist(strsplit(gsub("^\\s+", "", rawRMatFile[2]), "\\s+"))
-  rMatFile <- rawRMatFile[3:length(rawRMatFile)]
+  rawMatFile <- readLines(nonmemMatFilePath)
+  header <- unlist(strsplit(gsub("^\\s+", "", rawMatFile[2]), "\\s+"))
+  matFile <- rawMatFile[3:length(rawMatFile)]
   
   # Remove leading whitespace
-  rMatFile <- gsub("^\\s+", "", rMatFile)
+  matFile <- gsub("^\\s+", "", matFile)
   
   # split the lines up and pack them into a df
-  rMatFileCharDF <- data.frame(do.call("rbind", strsplit(rMatFile, "\\s+")), 
+  matFileCharDF <- data.frame(do.call("rbind", strsplit(matFile, "\\s+")), 
                               stringsAsFactors = FALSE)[,-1]
-  names(rMatFileCharDF) <- header[-1]
+  names(matFileCharDF) <- header[-1]
   
   # I need to convert the characters to numerics
-  rMatFileDF <- as.data.frame(sapply(rMatFileCharDF, as.numeric))
+  matFileDF <- as.data.frame(sapply(matFileCharDF, as.numeric))
   
   # Return the ext file contents as a dataframe
-  return(rMatFileDF)
-  
+  return(matFileDF)
 }
 
 stripZeroRowsCols <- function(inputMatrix){
   
   # Make sure the matrix is symmetric
   if(ncol(inputMatrix) != nrow(inputMatrix)){
-    print("Matrix sent to stripZeroRows is not symmetric")
+    print("Matrix sent to stripZeroRowsCols is not symmetric")
     return(NULL)
   }
   
