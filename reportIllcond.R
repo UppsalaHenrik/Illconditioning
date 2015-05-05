@@ -147,6 +147,23 @@ reportIllcond <- function(rawResults){
                                 paste0("Neither\nN=", n4)))
 
   dev.off()
+  
+  
+png(paste0('./Plots/', "initOFVBoxplot" ,".png"),
+    height=600, width=1200)
+
+ggplot(rawResultsNoNA, aes(x=group, y=initOFVs, fill=as.character(rawResultsNoNA$group)))+
+  geom_boxplot()+
+  scale_fill_discrete(name="Outcome",
+                      breaks=c("1", "2", "3", "4"),
+                      labels=c(paste0("Min+Cov\nN=", n1),
+                               paste0("Min Only\nN=", n2), 
+                               paste0("Cov Only\nN=", n3), 
+                               paste0("Neither\nN=", n4)))
+
+dev.off()
+  
+  
 
 #  # Cool 3D plot
 #  library(scatterplot3d) 
