@@ -6,7 +6,7 @@ runMassPrecond <- function(modelFileName, maxMag=15, reps=1000, pertSize=0.2,
   userWD <- getwd()
   
   # Create a unique folder, copy all the relevant files there and set wd.
-  modelFileNameNoExt <- fileSysSetup(modelFileName)
+  modelFileNameNoExt <- fileSysSetup(modelFileName, precondScriptPath)
   modelFileName <- paste0(modelFileNameNoExt, ".mod")
   
   # Generate a magnitude for each rep

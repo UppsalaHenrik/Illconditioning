@@ -1,5 +1,5 @@
 
-fileSysSetup <- function(modelFileName){
+fileSysSetup <- function(modelFileName, precondScriptPath){
   
   # Get the model file name without extension for various uses
   modelFileNameNoExt <- sub("\\.[[:alnum:]]+$", "", basename(as.character(modelFileName)))
@@ -8,7 +8,6 @@ fileSysSetup <- function(modelFileName){
   
   # Create a directory to do everything in
   dirName <- paste0("massPrecond", "_", format(Sys.time(), "%y%m%d_%H%M%S"))
-
   dir.create(dirName)
 
   # Parse the data file name from the model file
@@ -25,8 +24,9 @@ fileSysSetup <- function(modelFileName){
   # word (after $DATA is removed above) as the file name
   dataFileName <- strsplit(cutDataRow, " ")[[1]][1]
 
-  # Puts together a vector of files to copy
-  filesToCopy <- list.files(pattern=eval(modelFileNameNoExt))
+  # Puts together a vector of file names to copy
+  filePattern <- paste0(modelFileNameNoExt, ".")
+  filesToCopy <- list.files(pattern=eval(filePattern))
   filesToCopy <- c(filesToCopy, dataFileName)
 
   #Copy all the relevant files to the new dir
@@ -48,7 +48,7 @@ fileSysSetup <- function(modelFileName){
     # We have all we need to build the command and run it
     # I'm using the unhacked precond version of the precond hacked PsN version :)
     
-    cmd <- paste0("perl ./../../_hackedPsN/PsN4_3/bin/precond ", modelFileName, " -pre=", 
+    cmd <- paste0("srun perl ", precondScriptPath, " ", modelFileName, " -pre=", 
                   covFileName," -cholesky -dir=org_mod_precond")
     
     system(cmd, wait=TRUE)
