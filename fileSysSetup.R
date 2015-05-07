@@ -7,7 +7,7 @@ fileSysSetup <- function(modelFileName, precondScriptPath){
   covFileName <- paste0(modelFileNameNoExt, ".cov")
   
   # Create a directory to do everything in
-  dirName <- paste0("massPrecond", "_", format(Sys.time(), "%y%m%d_%H%M%S"))
+  dirName <- paste0(modelFileNameNoExt, "_illCond", "_", format(Sys.time(), "%y%m%d_%H%M%S"))
   dir.create(dirName)
 
   # Parse the data file name from the model file

@@ -43,6 +43,7 @@ parseIllcond <- function(precondDir, modelFileNameNoExt){
   
   }else{
     
+    initOFV <- "NA"
     NMCondNum <- "NA"
     
   }
