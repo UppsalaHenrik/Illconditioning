@@ -43,9 +43,9 @@ parseIllcond <- function(precondDir, modelFileNameNoExt){
   
   }else{
     
-    initOFV <- "NA"
-    NMCondNum <- "NA"
-    
+    initOFV <- NA
+    NMCondNum <- NA
+    print("No ext file found")
   }
 
   # If available, parse the correlation matrix and calculate its condition number
@@ -60,7 +60,8 @@ parseIllcond <- function(precondDir, modelFileNameNoExt){
   }else{
     
     # If the correlation matrix was not found we just display it as NA
-    corrMatCondNum <- "NA"
+    corrMatCondNum <- NA
+    print("No cor file found")
   }
   
   # If available, parse the R matrix and calculate its condition number  
@@ -77,13 +78,13 @@ parseIllcond <- function(precondDir, modelFileNameNoExt){
   }else{
     
     # If the R matrix was not found we just display it as NA
-    rMatCondNum <- "NA"
+    rMatCondNum <- NA
   }
    
   # Put them together and return
-  row <- c(precondDir, NMCondNum, corrMatCondNum, rMatCondNum, initOFV, rawres)
-  names(row) <- c("runDirs", "NMCondNums", "corrMatCondNums", "rMatCondNums", 
-                  "initOFVs", names(rawres))
+  row <- data.frame(runDirs = precondDir, NMCondNums = NMCondNum, 
+                    corrMatCondNums = corrMatCondNum, rMatCondNums = rMatCondNum, 
+                    initOFVs = initOFV, rawres, stringAsFactors = FALSE)
   
   return(row)
 }

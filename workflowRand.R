@@ -1,6 +1,6 @@
 
 runMassPrecond <- function(modelFileName, maxMag=15, reps=1000, pertSize=0.2, 
-                           precondScriptPath = "C:/Users/hnyberg/Dropbox/Doktorandsaker/PrecondProject/_hackedPsN3/PsN4_3/bin/precond_numStab"){
+                           precondScriptPath = "C:/Users/hnyberg/Dropbox/Doktorandsaker/PrecondProject/_hackedPsN4/PsN4_3/bin/precond_numStab"){
   
   # Get the working directory to set it back later
   userWD <- getwd()
@@ -19,8 +19,7 @@ runMassPrecond <- function(modelFileName, maxMag=15, reps=1000, pertSize=0.2,
   })
   
   # Bind them together
-  runs <- as.data.frame(do.call("rbind", runRows))
-  names(runs) <- c("reps", "illCondFiles", "magnitudes", "theorCondNums", "seeds")
+  runs <- do.call("rbind", runRows)
   
   # Run all the runs!
   runDirs <- apply(runs, 1, function(x){
@@ -34,6 +33,9 @@ runMassPrecond <- function(modelFileName, maxMag=15, reps=1000, pertSize=0.2,
   
   # Bind them
   runs <- cbind(runs, runDirs)
+
+  # Save the runs DF as rData. Just a safety feature in case parsing fails
+  save(runs, file = "runs.Rdata")
   
   # Parse the rawres and .ext output from PsN precond
   allRows <- lapply(runDirs, function(x){
@@ -53,11 +55,8 @@ runMassPrecond <- function(modelFileName, maxMag=15, reps=1000, pertSize=0.2,
   # Write our the results to a raw results file
   write.csv(rawResults, file=paste0("raw_results_", 
                                     basename(getwd()), 
-                                    ".csv"),
-            row.names=FALSE)
-  
-  # Do the automatic reporting
-  reportIllcond(rawResults)
+                                    ".csv"), row.names=FALSE)
+
   
   # List all the NM_run directories
   modelfitDirs <- list.dirs(recursive=TRUE)[grep("modelfit_dir[0-9]+$", 
@@ -80,6 +79,10 @@ runMassPrecond <- function(modelFileName, maxMag=15, reps=1000, pertSize=0.2,
   
   # Delete the NM_run directories
   unlink(modelfitDirs, recursive=TRUE)
+  
+  
+  # Do the automatic reporting
+  reportIllcond(rawResults)
   
   # Set the working directory back
   setwd(userWD)

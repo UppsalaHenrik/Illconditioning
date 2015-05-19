@@ -105,5 +105,7 @@ illCondSetup <- function(covCsv, magnitude, replic){
   seed <- as.integer(runif(1, min=1000, max=1000000))
   
   # return the generated csv file name
-  return(c(replic, csvFileName, magnitude, theorCondNum, seed))
+  return(data.frame(reps = replic, illCondFiles = csvFileName, 
+                    magnitudes = magnitude, theorCondNums = theorCondNum, 
+                    seeds = seed))
 }

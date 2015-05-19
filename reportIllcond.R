@@ -1,6 +1,9 @@
 
 reportIllcond <- function(rawResults){
   
+  
+  theme_set(theme_bw(base_size = 30))
+  
   # Setting up folders  
   dir.create("./Plots/")
   
@@ -50,125 +53,151 @@ reportIllcond <- function(rawResults){
   print(message5)
   
   
-#  meanTheorCondNum1 <- mean(subset(rawResultsNoNA, group==1)$initOFV)
   
-  # OFV vs theorCondNum scatter
+  rawResultsNoNA$outcome <- 
+    factor(rawResultsNoNA$group, 
+           levels = 1:4, labels=(c(paste0("Minimization and Covariance Step Successful\nN=", n1),
+                                   paste0("Minimization Successful Only\nN=", n2), 
+                                   paste0("Covariance Step Successful Only\nN=", n3), 
+                                   paste0("Neither Minimization Nor Covariance Step Successful\nN=", n4))))
   
-  outcome <- as.factor(subset(rawResultsNoNA, group!=2)$group)
   
-  png(paste0('./Plots/', "ScatterOFVvsTheorCondNum" ,".png"),
-      height=600, width=1200)
   
-  ggplot(subset(rawResultsNoNA, group!=2), aes(x=theorCondNums, y=ofv,
-                                               colour=outcome))+
-    geom_point(size=3.5)+
-    geom_point(data=subset(rawResultsNoNA, group==2), 
-               colour="red", shape=4, size=5)+
-    scale_x_log10(name="Theoretical Condition Number of R Matrix")+
-    scale_y_continuous(name="Final OFV")+
-    scale_colour_brewer(palette="Set3", 
-                        name="Outcome",
-                        breaks=c("1", "2", "3", "4"),
-                        labels=c(paste0("Min+Cov\nN=", n1),
-                                 paste0("Min Only\nN=", n2), 
-                                 paste0("Cov Only\nN=", n3), 
-                                 paste0("Neither\nN=", n4)))
+  # Some basic definitions
+  dataForBackground <- rawResultsNoNA[, c('theorCondNums','rMatCondNums', 'ofv', 'initOFVs', 'NMCondNums')]
   
-  dev.off()
+  # Determine OFV axis limits and minimum for graphs
+  ofvWhiskerLims <- boxplot.stats(rawResultsNoNA$ofv)$stats[c(1, 5)]
+  lowLimOFV <- floor(ofvWhiskerLims[1]/100)*100-50
+  highLimOFV <- ceiling(ofvWhiskerLims[2]/100)*200
+  ofvLims <- c(lowLimOFV, highLimOFV)
+  minOFV <- min(rawResultsNoNA$ofv)
   
+  # Determine theorCondNums axis limits for graphs
+  highLimTheorCondNums <- quantile(rawResultsNoNA$theorCondNums, 
+                                   probs = 0.99, na.rm = TRUE)*100
+  theorCondNumLims <- c(1e-3, highLimTheorCondNums)
+  theorCondNumBoxplotLims <- c(0.001, 100000*boxplot.stats(rawResultsNoNA$theorCondNums)$stats[5])
+  
+  # Determine rMatCondNums axis limits for graphs  
+  highLimRMatCondNums <- quantile(rawResultsNoNA$rMatCondNums, 
+                                  probs = 0.99, na.rm = TRUE)*10000
+  rMatCondNumLims <- c(0.1, highLimRMatCondNums)
+  rMatCondNumBoxplotLims <- c(0.001, 100000*boxplot.stats(rawResultsNoNA$theorCondNums)$stats[5])
+  
+  
+  # Determine breaks for condition numbers. 10^5 is nice
+  condNumsBreaks <- 10^seq(-10, 100, by = 5)
+  
+  # Store the plots in objects and then print them. It seems I have to use 
+  # print() on them when running on the cluster.
+  
+  # Final OFV vs Theoretical Condition Number
+  OFVVsTheorCondNums <- ggplot()+
+    geom_point(aes(x=theorCondNums, y=ofv), size = 5.5, alpha = 0.2, 
+               col = 'darkgrey', data = dataForBackground)+
+    geom_point(aes(x=theorCondNums, y=ofv), size=5.5, alpha = 0.15, 
+               col = 'red', data = rawResultsNoNA)+
+    facet_wrap(~ outcome)+
+    geom_abline(intercept = minOFV, slope = 0, data = rawResultsNoNA)+
+    coord_cartesian(xlim = theorCondNumLims, ylim = ofvLims)+
+    scale_x_log10(name="Theoretical Condition Number of R Matrix", 
+                  breaks = condNumsBreaks)+
+    scale_y_continuous(name="Final OFV")
+  
+  # NM corr matrix condition number vs Theoretical Condition Number
+  NMCorCondNumVsTheorCondNums <- ggplot()+
+    geom_point(aes(x=theorCondNums, y=NMCondNums), size = 5.5, alpha = 0.2, 
+               col = 'darkgrey', data = dataForBackground)+
+    geom_point(aes(x=theorCondNums, y=NMCondNums), size=5.5, alpha = 0.15, 
+               col = 'red', data = rawResultsNoNA)+
+    facet_wrap(~ outcome)+
+    coord_cartesian(xlim = theorCondNumLims, ylim = c(-100,2500))+
+    scale_x_log10(name="Theoretical Condition Number of R Matrix", 
+                  breaks = condNumsBreaks)+
+    scale_y_continuous(name="Final OFV")
+  
+  # Condition number of R matrix from NONMEM vs theoretical R matrix condition number 
+  rMatCondNumsVsTheorCondNums <- ggplot()+
+    geom_point(aes(x=theorCondNums, y=rMatCondNums), size=5.5, alpha = 0.2, 
+               col = 'darkgrey', data = dataForBackground)+
+    geom_point(aes(x=theorCondNums, y=rMatCondNums), size=5.5, alpha = 0.15, 
+               col = 'red', data = rawResultsNoNA)+
+    facet_wrap(~ outcome)+
+    coord_cartesian(xlim = theorCondNumLims, ylim = rMatCondNumLims)+
+    scale_x_log10(name="Theoretical Condition Number of R Matrix", 
+                  breaks = condNumsBreaks)+
+    scale_y_log10(name="Condition Number of NONMEM R Matrix", 
+                  breaks = condNumsBreaks)+
+    geom_abline(data = rawResultsNoNA, stat = "abline", position = "identity")
   
   # OFV boxplot
-
-  png(paste0('./Plots/', "OFVBoxplot" ,".png"),
-      height=600, width=1200)
-  
-  ggplot(rawResultsNoNA, aes(x=group, y=ofv, fill=as.character(rawResultsNoNA$group)))+
+  ofvBoxplot <- ggplot(rawResultsNoNA, aes(x=group, y=ofv, fill=as.character(rawResultsNoNA$group)))+
     geom_boxplot()+
+    coord_cartesian(ylim = ofvLims)+
+    geom_abline(intercept = minOFV, slope = 0, size = 0.2, data = rawResultsNoNA)+
     scale_fill_discrete(name="Outcome",
                         breaks=c("1", "2", "3", "4"),
                         labels=c(paste0("Min+Cov\nN=", n1),
                                  paste0("Min Only\nN=", n2), 
                                  paste0("Cov Only\nN=", n3), 
                                  paste0("Neither\nN=", n4)))
+  
+  # theorCondNums boxplot
+  theorCondNumsBoxplot <- ggplot(rawResultsNoNA, aes(x=group, y=theorCondNums, fill=as.character(rawResultsNoNA$group)))+
+    geom_boxplot()+
+    coord_cartesian(ylim = theorCondNumBoxplotLims)+
+    scale_y_log10(name="Theoretical Condition Number of R Matrix", 
+                  breaks = condNumsBreaks)+
+    scale_fill_discrete(name="Outcome",
+                        breaks=c("1", "2", "3", "4"),
+                        labels=c(paste0("Min+Cov\nN=", n1),
+                                 paste0("Min Only\nN=", n2), 
+                                 paste0("Cov Only\nN=", n3), 
+                                 paste0("Neither\nN=", n4)))
+  
+  # nmCondNums boxplot
+#  nmCondNumsBoxplot <- ggplot(rawResultsNoNA, aes(x=group, y=NMCondNums, fill=as.character(rawResultsNoNA$group)))+
+#    geom_boxplot()+
+#    coord_cartesian(ylim = theorCondNumBoxplotLims)+
+#    scale_y_log10(name="NONMEM Condition Number of Correlation Matrix", 
+#                  breaks = condNumsBreaks)+
+#    scale_fill_discrete(name="Outcome",
+#                        breaks=c("1", "2", "3", "4"),
+#                        labels=c(paste0("Min+Cov\nN=", n1),
+#                                 paste0("Min Only\nN=", n2), 
+#                                 paste0("Cov Only\nN=", n3), 
+#                                 paste0("Neither\nN=", n4)))
+  
+  # Initial OFV Boxplot
+  initOFVBoxplot <- ggplot(rawResultsNoNA, aes(x=group, y=initOFVs, fill=as.character(rawResultsNoNA$group)))+
+    geom_boxplot()+
+    coord_cartesian(ylim = c(100, 1e6))+
+    scale_y_log10(name = "Initial OFV")+
+    scale_fill_discrete(name="Outcome",
+                        breaks=c("1", "2", "3", "4"),
+                        labels=c(paste0("Min+Cov\nN=", n1),
+                                 paste0("Min Only\nN=", n2), 
+                                 paste0("Cov Only\nN=", n3), 
+                                 paste0("Neither\nN=", n4)))
+  
+  # I put them all in a list that I can output later
+  graphList <- list(OFVVsTheorCondNums, rMatCondNumsVsTheorCondNums, 
+                    ofvBoxplot, theorCondNumsBoxplot, nmCondNumsBoxplot,
+                    initOFVBoxplot)
+  graphListNames <- c("OFVVsTheorCondNums", "rMatCondNumsVsTheorCondNums", 
+                      "ofvBoxplot", "theorCondNumsBoxplot", "nmCondNumsBoxplot",
+                      "initOFVBoxplot")
+  
+  sapply(seq_along(graphList), function(x){
     
-  dev.off()
+    png(paste0('./Plots/', graphListNames[x],"_highres.png"),
+        height=1500, width=1500)
+    
+    print(graphList[x])
+      
+    dev.off()
+        
+  })
   
-  # initOFV boxplot
-   
-  #png(paste0('./Plots/', "initOFVBoxplot" ,".png"),
-  #    height=600, width=1200)
-  
-  #ggplot(rawResultsNoNA, aes(x=group, y=initOFV, fill=as.character(rawResultsNoNA$group)))+
-  #  geom_boxplot()+
-  #  scale_fill_discrete(name="Outcome",
-  #                      breaks=c("1", "2", "3", "4"),
-  #                      labels=c(paste0("Min+Cov\nN=", n1),
-  #                               paste0("Min Only\nN=", n2), 
-  #                               paste0("Cov Only\nN=", n3), 
-  #                               paste0("Neither\nN=", n4)))
-  
-  #dev.off()
-  
-  # theorCondNum boxplot
-  
-  png(paste0('./Plots/', "theorCondNumBoxplot" ,".png"),
-      height=600, width=1200)
-  
-  ggplot(rawResultsNoNA, aes(x=group, y=theorCondNums, fill=as.character(rawResultsNoNA$group)))+
-    geom_boxplot()+
-    scale_fill_discrete(name="Outcome",
-                        breaks=c("1", "2", "3", "4"),
-                        labels=c(paste0("Min+Cov\nN=", n1),
-                                 paste0("Min Only\nN=", n2), 
-                                 paste0("Cov Only\nN=", n3), 
-                                 paste0("Neither\nN=", n4)))
-  
-  dev.off()
-  
-  
-
-  outcome <- as.factor(rawResultsNoNA$group)
-
-
-  png(paste0('./Plots/', "NMConNumsvstheorCondNum" ,".png"),
-      height=600, width=1200)
-
-  ggplot(rawResultsNoNA, aes(x=theorCondNums, y=NMCondNums,
-                                             colour=outcome))+
-    geom_point(size=3.5)+
-    scale_x_log10(name="Theoretical Condition Number of R Matrix")+
-    scale_y_continuous(name="NONMEM Cond Num of Corr Matrix")+
-    scale_colour_brewer(palette="Set3", 
-                        name="Outcome",
-                        breaks=c("1", "2", "3", "4"),
-                        labels=c(paste0("Min+Cov\nN=", n1),
-                                paste0("Min Only\nN=", n2), 
-                                paste0("Cov Only\nN=", n3), 
-                                paste0("Neither\nN=", n4)))
-
-  dev.off()
-  
-  
-png(paste0('./Plots/', "initOFVBoxplot" ,".png"),
-    height=600, width=1200)
-
-ggplot(rawResultsNoNA, aes(x=group, y=initOFVs, fill=as.character(rawResultsNoNA$group)))+
-  geom_boxplot()+
-  scale_fill_discrete(name="Outcome",
-                      breaks=c("1", "2", "3", "4"),
-                      labels=c(paste0("Min+Cov\nN=", n1),
-                               paste0("Min Only\nN=", n2), 
-                               paste0("Cov Only\nN=", n3), 
-                               paste0("Neither\nN=", n4)))
-
-dev.off()
-  
-  
-
-#  # Cool 3D plot
-#  library(scatterplot3d) 
-#  scatterplot3d(wt,disp,mpg, pch=16, highlight.3d=TRUE,
-#                type="h", main="3D Scatterplot")
-  
-  #return(NULL)
 }
