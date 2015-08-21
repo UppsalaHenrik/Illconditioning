@@ -6,6 +6,8 @@ fileSysSetup <- function(modelFileName, precondScriptPath){
   
   covFileName <- paste0(modelFileNameNoExt, ".cov")
   
+  rMatFileName <- paste0(modelFileNameNoExt, ".rmt")
+  
   # Create a directory to do everything in
   dirName <- paste0(modelFileNameNoExt, "_illCond", "_", format(Sys.time(), "%y%m%d_%H%M%S"))
   dir.create(dirName)
@@ -49,7 +51,7 @@ fileSysSetup <- function(modelFileName, precondScriptPath){
     # I'm using the unhacked precond version of the precond hacked PsN version :)
     
     cmd <- paste0("srun perl ", precondScriptPath, " ", modelFileName, " -pre=", 
-                  covFileName," -cholesky -dir=org_mod_precond")
+                  rMatFileName," -dir=org_mod_precond")
     
     system(cmd, wait=TRUE)
       

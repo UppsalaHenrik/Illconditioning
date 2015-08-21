@@ -33,12 +33,6 @@ illCondSetup <- function(covCsv, magnitude, replic){
   # Determine alpha that will produce a condition number of the requested magnitude
   alpha <- (magnitude*log(10)) / (log(kappa(posDefRandThetaMat, exact=TRUE)))
 
-
-  newThetaMat <- eigenDecomp$vectors %*% 
-                 diag(newEigenVals^alpha) %*% 
-                 t(eigenDecomp$vectors)
-
-
   # I should really get the condition number of the inverse theta matrix plus the original 
   # sigma/omega bits and use that. This is my attempt.
 
@@ -62,29 +56,9 @@ illCondSetup <- function(covCsv, magnitude, replic){
 
   # Calculate the theoretical condition number
   theorCondNum <- kappa(condNumMat, exact=TRUE)
-  
-  # Put back sigma and omega elements
-  newThetaMatRows <- matrix(0, nrow=nrow(noFixCovMatrix), 
-                               ncol=nrow(newThetaMat))
-  
-  
-  if(length(nonFixNonThetaRows)==0){
-    newFullMat <- newThetaMat
-  }else{
-    # Insert the random theta rows into the right places
-    newThetaMatRows[-nonFixNonThetaRows,] <- newThetaMat
-    
-    # Insert the non theta rows
-    
-    newFullMat <- cbind(newThetaMatRows, 
-                           noFixCovMatrix[,nonFixNonThetaRows])
-    
-    newFullMat[nonFixNonThetaRows,] <- noFixCovMatrix[nonFixNonThetaRows,]
-  }
-
 
   # If there were any fixed params, put back the zeroes
-  newMat <- putBackZeroRows(newFullMat, fixRows)
+  newMat <- putBackZeroRows(condNumMat, fixRows)
 
   # I'm having issues with the precond script saying the matrix isn't symmetric.
   # I'll fix that here.
